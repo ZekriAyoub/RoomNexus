@@ -28,4 +28,7 @@ public class Room {
     private Integer capacity;
 
     private String pictureUrl;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Company company;
 }
