@@ -7,7 +7,10 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
@@ -15,6 +18,7 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@EntityListeners(AuditingEntityListener.class)
 @Table(name = "user_profile")
 public class UserProfile {
 
@@ -24,12 +28,15 @@ public class UserProfile {
     private UUID id;
 
     @NotBlank(message = "The user's keycloak id is required")
+    @Column(name = "keycloak_user_id", unique = true, nullable = false)
     private String keycloakUserId;
 
     @NotBlank(message = "The user's firstname is required")
+    @Column(name = "first_name", nullable = false)
     private String firstName;
 
     @NotBlank(message = "The user's lastname is required")
+    @Column(name = "last_name", nullable = false)
     private String lastName;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -39,4 +46,8 @@ public class UserProfile {
     @NotNull(message = "The user's role is required")
     @Enumerated(EnumType.STRING)
     private Role role;
+
+    @CreatedDate
+    @Column(name = "created_at", updatable = false, nullable = false)
+    private LocalDateTime createdAt;
 }

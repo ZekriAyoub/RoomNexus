@@ -23,10 +23,11 @@ public class Company {
     private UUID id;
 
     @NotBlank(message = "The company's name is required")
+    @Column(unique = true, nullable = false)
     private String name;
 
     @NotBlank(message = "The company's keycloak group id is required")
-    @Column(name = "keycloak_group_id")
+    @Column(name = "keycloak_group_id", unique = true, nullable = false)
     private String keycloakGroupId;
 
 }
