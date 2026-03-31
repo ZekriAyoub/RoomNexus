@@ -10,7 +10,8 @@ import lombok.Setter;
 import java.util.UUID;
 
 @Entity
-@Getter @Setter
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "company")
@@ -25,6 +26,7 @@ public class Company {
     private String name;
 
     @NotBlank(message = "The company's keycloak group id is required")
+    @Column(name = "keycloak_group_id")
     private String keycloakGroupId;
 
 }

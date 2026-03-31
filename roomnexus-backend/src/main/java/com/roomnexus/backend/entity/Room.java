@@ -10,7 +10,8 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "room")
-@Getter @Setter
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class Room {
@@ -27,8 +28,10 @@ public class Room {
     @Positive(message = "The capacity must be Positive")
     private Integer capacity;
 
+    @Column(name = "picture_url")
     private String pictureUrl;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "company_id", nullable = false)
     private Company company;
 }

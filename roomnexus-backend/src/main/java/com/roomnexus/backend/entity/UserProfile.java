@@ -2,6 +2,7 @@ package com.roomnexus.backend.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -10,7 +11,8 @@ import lombok.Setter;
 import java.util.UUID;
 
 @Entity
-@Getter @Setter
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "user_profile")
@@ -31,8 +33,10 @@ public class UserProfile {
     private String lastName;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "company_id", nullable = false)
     private Company company;
 
-    @NotBlank(message = "The user's role is required")
+    @NotNull(message = "The user's role is required")
+    @Enumerated(EnumType.STRING)
     private Role role;
 }
