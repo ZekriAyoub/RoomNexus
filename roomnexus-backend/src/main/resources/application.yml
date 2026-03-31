@@ -19,6 +19,12 @@ spring:
     baseline-on-migrate: true
     schemas: public
 
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8081/realms/roomnexus
+
 
 server:
   port: ${APP_PORT}
