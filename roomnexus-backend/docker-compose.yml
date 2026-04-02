@@ -41,6 +41,7 @@ services:
       KC_DB_URL: jdbc:postgresql://db:5432/${DB_NAME}
       KC_DB_USERNAME: ${DB_USER}
       KC_DB_PASSWORD: ${DB_PASSWORD}
+      KC_DB_SCHEMA: keycloak
     ports:
       - "${KC_PORT}:${KC_CONTAINER_PORT}"
     depends_on:
