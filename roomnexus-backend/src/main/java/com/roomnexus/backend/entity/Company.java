@@ -7,6 +7,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -29,5 +31,11 @@ public class Company {
     @NotBlank(message = "The company's keycloak group id is required")
     @Column(name = "keycloak_group_id", unique = true, nullable = false)
     private String keycloakGroupId;
+
+    @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Room> rooms = new ArrayList<>();
+
+    @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<UserProfile> users = new ArrayList<>();
 
 }
