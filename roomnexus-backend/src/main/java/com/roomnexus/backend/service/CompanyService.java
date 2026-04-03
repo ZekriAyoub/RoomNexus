@@ -48,4 +48,11 @@ public class CompanyService {
                 company.getKeycloakGroupId()
         );
     }
+
+    public void deleteCompany(UUID id) {
+        if (!companyRepository.existsById(id)) {
+            throw new EntityNotFoundException("Company not found with id: " + id);
+        }
+        companyRepository.deleteById(id);
+    }
 }

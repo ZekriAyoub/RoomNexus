@@ -38,4 +38,11 @@ public class CompanyController {
     public CompanyResponse getCompanyById(@PathVariable UUID id) {
         return companyService.getCompanyById(id);
     }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteCompany(@PathVariable UUID id) {
+        companyService.deleteCompany(id);
+    }
 }
