@@ -10,8 +10,10 @@ import com.roomnexus.backend.repository.CompanyRepository;
 import com.roomnexus.backend.repository.UserProfileRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Map;
@@ -119,5 +121,22 @@ public class UserProfileService {
                 .stream()
                 .map(this::toResponse)
                 .toList();
+    }
+
+    public UserProfile getActiveUserProfile(Jwt jwt) {
+        String keycloakUserId = jwt.getSubject();
+
+        UserProfile profile = userProfileRepository
+                .findByKeycloakUserId(keycloakUserId)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Profile not found for user: " + keycloakUserId));
+
+        if (profile.getStatus() != UserStatus.ACTIVE) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "Account is not active. Current status: " + profile.getStatus());
+        }
+
+        return profile;
     }
 }
