@@ -19,12 +19,12 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/v1/bookings")
 @RequiredArgsConstructor
-@Tag(name = "Bookings", description = "Gestion des réservations")
+@Tag(name = "Bookings", description = "Booking management")
 public class BookingController {
 
     private final BookingService bookingService;
 
-    @Operation(summary = "Créer une réservation")
+    @Operation(summary = "Create a booking")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
@@ -34,14 +34,14 @@ public class BookingController {
         return bookingService.createBooking(jwt, request);
     }
 
-    @Operation(summary = "Mes réservations")
+    @Operation(summary = "Get my bookings")
     @GetMapping("/me")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public List<BookingResponse> getMyBookings(@AuthenticationPrincipal Jwt jwt) {
         return bookingService.getMyBookings(jwt);
     }
 
-    @Operation(summary = "Réservations d'une salle")
+    @Operation(summary = "Get bookings by room")
     @GetMapping("/room/{roomId}")
     @PreAuthorize("hasRole('ADMIN')")
     public List<BookingResponse> getBookingsByRoom(
@@ -50,7 +50,7 @@ public class BookingController {
         return bookingService.getBookingsByRoom(jwt, roomId);
     }
 
-    @Operation(summary = "Annuler une réservation")
+    @Operation(summary = "Cancel a booking")
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")

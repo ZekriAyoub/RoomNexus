@@ -4,6 +4,8 @@ import com.roomnexus.backend.dto.CreateRoomRequest;
 import com.roomnexus.backend.dto.RoomResponse;
 import com.roomnexus.backend.dto.UpdateRoomRequest;
 import com.roomnexus.backend.service.RoomService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -18,10 +20,13 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/v1/rooms")
 @RequiredArgsConstructor
+@Tag(name = "Rooms", description = "Room management")
 public class RoomController {
 
     private final RoomService roomService;
 
+    @Operation(summary = "Create a room",
+            description = "Creates a new room for the specified company. Restricted to ADMIN")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasRole('ADMIN')")
@@ -29,6 +34,7 @@ public class RoomController {
         return roomService.createRoom(request);
     }
 
+    @Operation(summary = "Get all rooms by company")
     @GetMapping("/company/{companyId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public List<RoomResponse> getRoomsByCompany(
@@ -37,6 +43,7 @@ public class RoomController {
         return roomService.getRoomsByCompany(jwt, companyId);
     }
 
+    @Operation(summary = "Get available rooms by company")
     @GetMapping("/company/{companyId}/available")
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public List<RoomResponse> getAvailableRoomsByCompany(
@@ -45,6 +52,7 @@ public class RoomController {
         return roomService.getAvailableRoomsByCompany(jwt, companyId);
     }
 
+    @Operation(summary = "Get room by ID")
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public RoomResponse getRoomById(
@@ -53,6 +61,8 @@ public class RoomController {
         return roomService.getRoomById(jwt, id);
     }
 
+    @Operation(summary = "Update a room",
+            description = "Updates room details including availability. Restricted to ADMIN")
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public RoomResponse updateRoom(
@@ -62,6 +72,7 @@ public class RoomController {
         return roomService.updateRoom(jwt, id, request);
     }
 
+    @Operation(summary = "Delete a room")
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PreAuthorize("hasRole('ADMIN')")

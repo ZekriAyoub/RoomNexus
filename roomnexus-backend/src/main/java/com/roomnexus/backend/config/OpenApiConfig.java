@@ -16,7 +16,7 @@ public class OpenApiConfig {
         return new OpenAPI()
                 .info(new Info()
                         .title("RoomNexus API")
-                        .description("API de gestion de réservation de salles en entreprise")
+                        .description("API for managing meeting room bookings in a company")
                         .version("1.0.0"))
                 .addSecurityItem(new SecurityRequirement()
                         .addList("Bearer Authentication"))
@@ -26,6 +26,6 @@ public class OpenApiConfig {
                                         .type(SecurityScheme.Type.HTTP)
                                         .scheme("bearer")
                                         .bearerFormat("JWT")
-                                        .description("Coller le token JWT Keycloak ici")));
+                                        .description("Paste your Keycloak JWT token here")));
     }
 }
