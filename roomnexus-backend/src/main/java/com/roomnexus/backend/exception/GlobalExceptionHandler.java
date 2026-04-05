@@ -3,6 +3,7 @@ package com.roomnexus.backend.exception;
 import com.roomnexus.backend.dto.ErrorResponse;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -13,6 +14,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.stream.Collectors;
 
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -70,6 +72,11 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleGeneric(
             Exception ex,
             HttpServletRequest request) {
+        log.error("Unexpected error on {} {}: {}",
+                request.getMethod(),
+                request.getRequestURI(),
+                ex.getMessage(),
+                ex);
 
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)

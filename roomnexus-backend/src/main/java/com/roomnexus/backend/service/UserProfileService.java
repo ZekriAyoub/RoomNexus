@@ -10,9 +10,11 @@ import com.roomnexus.backend.repository.CompanyRepository;
 import com.roomnexus.backend.repository.UserProfileRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
@@ -21,6 +23,8 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
+@Slf4j
 public class UserProfileService {
 
     private final UserProfileRepository userProfileRepository;
@@ -52,6 +56,9 @@ public class UserProfileService {
         profile.setRole(extractRole(jwt));
         profile.setStatus(UserStatus.PENDING);
 
+        log.info("UserProfile created: keycloakId={} company={}",
+                keycloakUserId,
+                request.companyId());
         return toResponse(userProfileRepository.save(profile));
     }
 
@@ -67,6 +74,7 @@ public class UserProfileService {
         return Role.USER;
     }
 
+    @Transactional(readOnly = true)
     public UserProfileResponse getMyProfile(Jwt jwt) {
         String keycloakUserId = jwt.getSubject();
         UserProfile profile = userProfileRepository
@@ -76,6 +84,7 @@ public class UserProfileService {
         return toResponse(profile);
     }
 
+    @Transactional(readOnly = true)
     public List<UserProfileResponse> getUsersByCompany(UUID companyId) {
         companyRepository.findById(companyId)
                 .orElseThrow(() -> new EntityNotFoundException(
@@ -105,6 +114,7 @@ public class UserProfileService {
                 .orElseThrow(() -> new EntityNotFoundException(
                         "UserProfile not found: " + id));
         profile.setStatus(UserStatus.ACTIVE);
+        log.info("User approved: id={}", id);
         return toResponse(userProfileRepository.save(profile));
     }
 
@@ -113,9 +123,11 @@ public class UserProfileService {
                 .orElseThrow(() -> new EntityNotFoundException(
                         "UserProfile not found: " + id));
         profile.setStatus(UserStatus.REJECTED);
+        log.info("User rejected: id={}", id);
         return toResponse(userProfileRepository.save(profile));
     }
 
+    @Transactional(readOnly = true)
     public List<UserProfileResponse> getPendingUsers(UUID companyId) {
         return userProfileRepository.findByCompanyIdAndStatus(companyId, UserStatus.PENDING)
                 .stream()
@@ -123,6 +135,7 @@ public class UserProfileService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     public UserProfile getActiveUserProfile(Jwt jwt) {
         String keycloakUserId = jwt.getSubject();
 

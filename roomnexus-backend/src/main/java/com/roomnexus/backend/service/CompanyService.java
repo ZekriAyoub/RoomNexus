@@ -6,13 +6,17 @@ import com.roomnexus.backend.entity.Company;
 import com.roomnexus.backend.repository.CompanyRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
+@Slf4j
 public class CompanyService {
 
     private final CompanyRepository companyRepository;
@@ -23,9 +27,11 @@ public class CompanyService {
         company.setKeycloakGroupId(request.keycloakGroupId());
 
         Company saved = companyRepository.save(company);
+        log.info("Company created: id={} name={}", saved.getId(), saved.getName());
         return toResponse(saved);
     }
 
+    @Transactional(readOnly = true)
     public List<CompanyResponse> getAllCompanies() {
         return companyRepository.findAll()
                 .stream()
@@ -33,6 +39,7 @@ public class CompanyService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     public CompanyResponse getCompanyById(UUID id) {
         Company company = companyRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(
@@ -40,7 +47,6 @@ public class CompanyService {
         return toResponse(company);
     }
 
-    // Méthode privée de mapping entité → DTO
     private CompanyResponse toResponse(Company company) {
         return new CompanyResponse(
                 company.getId(),
@@ -54,5 +60,6 @@ public class CompanyService {
             throw new EntityNotFoundException("Company not found with id: " + id);
         }
         companyRepository.deleteById(id);
+        log.info("Company deleted: id={}", id);
     }
 }

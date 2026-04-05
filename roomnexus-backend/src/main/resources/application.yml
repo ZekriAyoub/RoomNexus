@@ -35,5 +35,9 @@ server:
 logging:
   level:
     com:
-      roomnexus: info
-
+      roomnexus: INFO
+    org:
+      springframework:
+        security: WARN
+      hibernate:
+        SQL: DEBUG

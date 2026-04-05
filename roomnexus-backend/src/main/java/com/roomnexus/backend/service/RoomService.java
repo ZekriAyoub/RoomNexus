@@ -11,14 +11,18 @@ import com.roomnexus.backend.repository.CompanyRepository;
 import com.roomnexus.backend.repository.RoomRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
+@Slf4j
 public class RoomService {
 
     private final RoomRepository roomRepository;
@@ -38,9 +42,15 @@ public class RoomService {
         room.setAvailable(true);
         room.setCompany(company);
 
-        return toResponse(roomRepository.save(room));
+        RoomResponse response = toResponse(roomRepository.save(room));
+        log.info("Room created: id={} name={} company={}",
+                response.id(),
+                response.name(),
+                response.companyId());
+        return response;
     }
 
+    @Transactional(readOnly = true)
     public List<RoomResponse> getRoomsByCompany(Jwt jwt, UUID companyId) {
         UserProfile user = userProfileService.getActiveUserProfile(jwt);
         CompanyAccessGuard.verify(user, companyId);
@@ -55,6 +65,7 @@ public class RoomService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     public List<RoomResponse> getAvailableRoomsByCompany(Jwt jwt, UUID companyId) {
         UserProfile user = userProfileService.getActiveUserProfile(jwt);
         CompanyAccessGuard.verify(user, companyId);
@@ -69,6 +80,7 @@ public class RoomService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     public RoomResponse getRoomById(Jwt jwt, UUID id) {
         UserProfile user = userProfileService.getActiveUserProfile(jwt);
         Room room = findRoomById(id);
@@ -87,7 +99,15 @@ public class RoomService {
         room.setDescription(request.description());
         room.setAvailable(request.available());
 
-        return toResponse(roomRepository.save(room));
+        RoomResponse response = toResponse(roomRepository.save(room));
+        log.info("Room updated: id={} name={} capacity={} available={} description={} pictureUrl={}",
+                response.id(),
+                response.name(),
+                response.capacity(),
+                response.available(),
+                response.description(),
+                response.pictureUrl());
+        return response;
     }
 
 
@@ -97,6 +117,10 @@ public class RoomService {
         CompanyAccessGuard.verify(user, room.getCompany().getId());
 
         roomRepository.delete(room);
+        log.info("Room deleted: id={} name={} companyId={}",
+                room.getId(),
+                room.getName(),
+                room.getCompany().getId());
     }
 
     private Room findRoomById(UUID id) {

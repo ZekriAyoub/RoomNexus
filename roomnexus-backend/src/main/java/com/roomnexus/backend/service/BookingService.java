@@ -10,9 +10,11 @@ import com.roomnexus.backend.repository.BookingRepository;
 import com.roomnexus.backend.repository.RoomRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
@@ -20,6 +22,8 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
+@Slf4j
 public class BookingService {
 
     private final BookingRepository bookingRepository;
@@ -46,9 +50,17 @@ public class BookingService {
         booking.setStartTime(request.startTime());
         booking.setEndTime(request.endTime());
 
-        return toResponse(bookingRepository.save(booking));
+        BookingResponse response = toResponse(bookingRepository.save(booking));
+        log.info("Booking created: id={} room={} user={} from={} to={}",
+                response.id(),
+                response.roomId(),
+                response.bookedById(),
+                response.startTime(),
+                response.endTime());
+        return response;
     }
 
+    @Transactional(readOnly = true)
     public List<BookingResponse> getMyBookings(Jwt jwt) {
         UserProfile user = userProfileService.getActiveUserProfile(jwt);
         return bookingRepository.findByBookedById(user.getId())
@@ -57,6 +69,7 @@ public class BookingService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     public List<BookingResponse> getBookingsByRoom(Jwt jwt, UUID roomId) {
         UserProfile user = userProfileService.getActiveUserProfile(jwt);
         Room room = roomRepository.findById(roomId)
@@ -86,6 +99,9 @@ public class BookingService {
 
         CompanyAccessGuard.verify(user, booking.getRoom().getCompany().getId());
 
+        log.info("Booking cancelled: id={} by user={}",
+                bookingId,
+                user.getId());
         bookingRepository.delete(booking);
     }
 
