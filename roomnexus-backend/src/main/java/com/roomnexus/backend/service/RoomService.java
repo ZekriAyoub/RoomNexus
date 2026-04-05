@@ -5,10 +5,13 @@ import com.roomnexus.backend.dto.RoomResponse;
 import com.roomnexus.backend.dto.UpdateRoomRequest;
 import com.roomnexus.backend.entity.Company;
 import com.roomnexus.backend.entity.Room;
+import com.roomnexus.backend.entity.UserProfile;
+import com.roomnexus.backend.exception.CompanyAccessGuard;
 import com.roomnexus.backend.repository.CompanyRepository;
 import com.roomnexus.backend.repository.RoomRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,6 +23,7 @@ public class RoomService {
 
     private final RoomRepository roomRepository;
     private final CompanyRepository companyRepository;
+    private final UserProfileService userProfileService;
 
     public RoomResponse createRoom(CreateRoomRequest request) {
         Company company = companyRepository.findById(request.companyId())
@@ -37,7 +41,10 @@ public class RoomService {
         return toResponse(roomRepository.save(room));
     }
 
-    public List<RoomResponse> getRoomsByCompany(UUID companyId) {
+    public List<RoomResponse> getRoomsByCompany(Jwt jwt, UUID companyId) {
+        UserProfile user = userProfileService.getActiveUserProfile(jwt);
+        CompanyAccessGuard.verify(user, companyId);
+
         companyRepository.findById(companyId)
                 .orElseThrow(() -> new EntityNotFoundException(
                         "Company not found with id: " + companyId));
@@ -48,7 +55,10 @@ public class RoomService {
                 .toList();
     }
 
-    public List<RoomResponse> getAvailableRoomsByCompany(UUID companyId) {
+    public List<RoomResponse> getAvailableRoomsByCompany(Jwt jwt, UUID companyId) {
+        UserProfile user = userProfileService.getActiveUserProfile(jwt);
+        CompanyAccessGuard.verify(user, companyId);
+
         companyRepository.findById(companyId)
                 .orElseThrow(() -> new EntityNotFoundException(
                         "Company not found with id: " + companyId));
@@ -59,12 +69,17 @@ public class RoomService {
                 .toList();
     }
 
-    public RoomResponse getRoomById(UUID id) {
-        return toResponse(findRoomById(id));
+    public RoomResponse getRoomById(Jwt jwt, UUID id) {
+        UserProfile user = userProfileService.getActiveUserProfile(jwt);
+        Room room = findRoomById(id);
+        CompanyAccessGuard.verify(user, room.getCompany().getId());
+        return toResponse(room);
     }
 
-    public RoomResponse updateRoom(UUID id, UpdateRoomRequest request) {
+    public RoomResponse updateRoom(Jwt jwt, UUID id, UpdateRoomRequest request) {
+        UserProfile user = userProfileService.getActiveUserProfile(jwt);
         Room room = findRoomById(id);
+        CompanyAccessGuard.verify(user, room.getCompany().getId());
 
         room.setName(request.name());
         room.setCapacity(request.capacity());
@@ -75,11 +90,13 @@ public class RoomService {
         return toResponse(roomRepository.save(room));
     }
 
-    public void deleteRoom(UUID id) {
-        if (!roomRepository.existsById(id)) {
-            throw new EntityNotFoundException("Room not found with id: " + id);
-        }
-        roomRepository.deleteById(id);
+
+    public void deleteRoom(Jwt jwt, UUID id) {
+        UserProfile user = userProfileService.getActiveUserProfile(jwt);
+        Room room = findRoomById(id);
+        CompanyAccessGuard.verify(user, room.getCompany().getId());
+
+        roomRepository.delete(room);
     }
 
     private Room findRoomById(UUID id) {

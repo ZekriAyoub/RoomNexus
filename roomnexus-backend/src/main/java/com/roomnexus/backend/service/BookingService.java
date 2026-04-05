@@ -5,6 +5,7 @@ import com.roomnexus.backend.dto.CreateBookingRequest;
 import com.roomnexus.backend.entity.Booking;
 import com.roomnexus.backend.entity.Room;
 import com.roomnexus.backend.entity.UserProfile;
+import com.roomnexus.backend.exception.CompanyAccessGuard;
 import com.roomnexus.backend.repository.BookingRepository;
 import com.roomnexus.backend.repository.RoomRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -34,6 +35,8 @@ public class BookingService {
                 .orElseThrow(() -> new EntityNotFoundException(
                         "Room not found with id: " + request.roomId()));
 
+        CompanyAccessGuard.verify(user, room.getCompany().getId());
+
         validateRoomAvailability(room);
         validateNoOverlap(request);
 
@@ -54,10 +57,14 @@ public class BookingService {
                 .toList();
     }
 
-    public List<BookingResponse> getBookingsByRoom(UUID roomId) {
-        if (!roomRepository.existsById(roomId)) {
-            throw new EntityNotFoundException("Room not found with id: " + roomId);
-        }
+    public List<BookingResponse> getBookingsByRoom(Jwt jwt, UUID roomId) {
+        UserProfile user = userProfileService.getActiveUserProfile(jwt);
+        Room room = roomRepository.findById(roomId)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Room not found with id: " + roomId));
+
+        CompanyAccessGuard.verify(user, room.getCompany().getId());
+
         return bookingRepository.findByRoomId(roomId)
                 .stream()
                 .map(this::toResponse)
@@ -76,6 +83,8 @@ public class BookingService {
                     HttpStatus.FORBIDDEN,
                     "You are not allowed to cancel this booking");
         }
+
+        CompanyAccessGuard.verify(user, booking.getRoom().getCompany().getId());
 
         bookingRepository.delete(booking);
     }

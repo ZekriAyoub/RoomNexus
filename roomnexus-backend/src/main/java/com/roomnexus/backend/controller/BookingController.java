@@ -38,8 +38,10 @@ public class BookingController {
 
     @GetMapping("/room/{roomId}")
     @PreAuthorize("hasRole('ADMIN')")
-    public List<BookingResponse> getBookingsByRoom(@PathVariable UUID roomId) {
-        return bookingService.getBookingsByRoom(roomId);
+    public List<BookingResponse> getBookingsByRoom(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable UUID roomId) {
+        return bookingService.getBookingsByRoom(jwt, roomId);
     }
 
     @DeleteMapping("/{id}")

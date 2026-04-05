@@ -8,6 +8,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -28,35 +30,44 @@ public class RoomController {
     }
 
     @GetMapping("/company/{companyId}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public List<RoomResponse> getRoomsByCompany(@PathVariable UUID companyId) {
-        return roomService.getRoomsByCompany(companyId);
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    public List<RoomResponse> getRoomsByCompany(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable UUID companyId) {
+        return roomService.getRoomsByCompany(jwt, companyId);
     }
 
     @GetMapping("/company/{companyId}/available")
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    public List<RoomResponse> getAvailableRoomsByCompany(@PathVariable UUID companyId) {
-        return roomService.getAvailableRoomsByCompany(companyId);
+    public List<RoomResponse> getAvailableRoomsByCompany(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable UUID companyId) {
+        return roomService.getAvailableRoomsByCompany(jwt, companyId);
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    public RoomResponse getRoomById(@PathVariable UUID id) {
-        return roomService.getRoomById(id);
+    public RoomResponse getRoomById(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable UUID id) {
+        return roomService.getRoomById(jwt, id);
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public RoomResponse updateRoom(
+            @AuthenticationPrincipal Jwt jwt,
             @PathVariable UUID id,
             @RequestBody @Valid UpdateRoomRequest request) {
-        return roomService.updateRoom(id, request);
+        return roomService.updateRoom(jwt, id, request);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PreAuthorize("hasRole('ADMIN')")
-    public void deleteRoom(@PathVariable UUID id) {
-        roomService.deleteRoom(id);
+    public void deleteRoom(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable UUID id) {
+        roomService.deleteRoom(jwt, id);
     }
 }
