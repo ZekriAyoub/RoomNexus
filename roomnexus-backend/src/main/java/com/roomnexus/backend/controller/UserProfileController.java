@@ -2,6 +2,7 @@ package com.roomnexus.backend.controller;
 
 import com.roomnexus.backend.dto.CreateUserProfileRequest;
 import com.roomnexus.backend.dto.UserProfileResponse;
+import com.roomnexus.backend.entity.Role;
 import com.roomnexus.backend.service.UserProfileService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -57,5 +58,13 @@ public class UserProfileController {
     @PreAuthorize("hasRole('ADMIN')")
     public List<UserProfileResponse> getPendingUsers(@PathVariable UUID companyId) {
         return userProfileService.getPendingUsers(companyId);
+    }
+
+    @PatchMapping("/{id}/role")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    public UserProfileResponse updateRole(
+            @PathVariable UUID id,
+            @RequestParam Role role) {
+        return userProfileService.updateRole(id, role);
     }
 }

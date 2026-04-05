@@ -139,4 +139,11 @@ public class UserProfileService {
 
         return profile;
     }
+
+    public UserProfileResponse updateRole(UUID id, Role newRole) {
+        UserProfile profile = userProfileRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("UserProfile not found: " + id));
+        profile.setRole(newRole);
+        return toResponse(userProfileRepository.save(profile));
+    }
 }
